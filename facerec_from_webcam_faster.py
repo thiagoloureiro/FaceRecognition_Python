@@ -1,7 +1,7 @@
 import face_recognition
 import cv2
 import sys
-import datetime
+import datetime, timedelta
 import requests
 old_stdout = sys.stdout
 
@@ -65,6 +65,9 @@ face_encodings = []
 face_names = []
 process_this_frame = True
 lastName = ""
+seconds_diff = 0
+datetime_start = datetime.datetime.now()
+
 
 while True:
     # Grab a single frame of video
@@ -81,8 +84,8 @@ while True:
         # Find all the faces and face encodings in the current frame of video
         face_locations = face_recognition.face_locations(rgb_small_frame)
         face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
-
         face_names = []
+        
         for face_encoding in face_encodings:
             # See if the face is a match for the known face(s)
             matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
@@ -91,10 +94,17 @@ while True:
             # If a match was found in known_face_encodings, just use the first one.
             if True in matches:
                 first_match_index = matches.index(True)
-                name = known_face_names[first_match_index]           
+                name = known_face_names[first_match_index]        
+                seconds_diff = (datetime.datetime.now() - datetime_start).total_seconds() 
+                print(seconds_diff)
+
+                if seconds_diff > 600:
+                    lastName = ""
+
                 if name != lastName:
                     print("Called API")
-                    print(datetime.datetime.now().time())
+                    print(datetime.datetime.now())
+                    datetime_start = datetime.datetime.now()
                     response = requests.get('http://localhost:52923/api/values?value=' + name)
                     lastName = name
 
