@@ -28,6 +28,10 @@ class Voice(object):
         self.tts(filename="Hello-" + name + ".mp3", text = "Olá" + str(name)  + "!")
         pass
 
+    def personAdded(self,name):
+        self.tts(filename="Added-" + name + ".mp3", text = str(name)  + " adicionado com sucesso!")
+        pass
+
     def welcome(self):
         self.tts("Welcome.mp3","Bem-Vindo a disruptiv")
         pass
@@ -72,12 +76,44 @@ class Voice(object):
         pass
 
 
+class GIT_MONITOR(object):
+
+    def checkUpdate(self):
+        while True:
+            response = os.system("git pull origin marcos")
+            print(response)
+            time.sleep(5)
+        pass
+
 
 def getPersonByName(persons,name):
     for person in persons:
         if person.name is name:
             return persons.index(person)
     return -1
+
+
+def checkNewImagesToLearn(voice):
+    imagesDirectory = Path("./new_images")
+
+    if imagesDirectory.is_dir():
+        for file in list(imagesDirectory.glob('**/*.jpg')):
+            print("checkNewImagesToLearn " + file.name)
+            filename = file.name
+            filenamePieces = filename.split(".")
+            personName = filenamePieces[0]
+
+            personImage = face_recognition.load_image_file("./new_images/" + filename)
+            person_face_encoding = face_recognition.face_encodings(personImage)[0]
+
+            known_face_encodings.append(person_face_encoding)
+            known_face_names.append(personName)
+
+            currentFolder = os.getcwd()
+
+            os.rename(currentFolder + "/new_images/" + file.name , currentFolder + "/images/" + file.name)
+            print("New Person: " + personName)
+            voice.personAdded(personName)
 
 old_stdout = sys.stdout
 
@@ -98,7 +134,6 @@ known_face_encodings = []
 
 known_face_names = []
 
-
 # Load Images From folder
 
 imagesDirectory = Path("./images")
@@ -109,14 +144,11 @@ if imagesDirectory.is_dir():
         filenamePieces = filename.split(".")
         personName = filenamePieces[0]
 
-
         personImage = face_recognition.load_image_file("./images/" + filename)
         person_face_encoding = face_recognition.face_encodings(personImage)[0]
 
         known_face_encodings.append(person_face_encoding)
         known_face_names.append(personName)
-
-
 
 # Initialize some variables
 face_locations = []
@@ -132,7 +164,14 @@ voice = Voice([])
 somethingThread = threading.Thread(target=voice.loop)
 somethingThread.start()
 
+git = GIT_MONITOR()
+somethingThread = threading.Thread(target=git.checkUpdate)
+somethingThread.start()
+
 while True:
+
+    checkNewImagesToLearn(voice)
+
     # Grab a single frame of video
     ret, frame = video_capture.read()
 
