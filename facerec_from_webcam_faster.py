@@ -60,7 +60,7 @@ class Voice(object):
         if not my_file.is_file():
 
             url = 'https://stream.watsonplatform.net/text-to-speech/api/v1/synthesize?voice=pt-BR_IsabelaVoice&accept=audio/mp3&Accept=audio/mp3&text=' + text
-            headers = {'Authorization': 'Basic ODQ2NDM0N2YtMTQ2Ni00NGQxLTg4M2EtZjZmOWFkZDkwODQxOnhrZmM0aHVyWlhYdQ=='}
+            headers = {'Authorization': 'Basic =='}
             response = requests.get(url, headers=headers)
             print("response:", response)
 
